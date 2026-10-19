@@ -6,11 +6,13 @@ directories:
 files:
   - out/**
   - package.json
+  # Window, taskbar and tray icon are loaded from here at runtime
+  - resources/**
   - '!**/*.map'
 # tesseract.js runs OCR in worker_threads from node_modules; it can't load from inside an asar, so asar is off
 asar: false
 win:
-  icon: resources/icon.png
+  icon: resources/icon.ico
   target:
     - target: nsis
       arch: [x64]

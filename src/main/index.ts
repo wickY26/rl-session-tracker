@@ -20,7 +20,8 @@ import { matchErrors } from '../core/validate'
 import templates from '../ocr/digit-templates.json'
 import { ScoreboardReader } from '../ocr/reader'
 import type { AppState, ConfirmCommand, ConfirmPayload, SaveResult, SoundName } from '../shared/api'
-import iconPath from '../../resources/icon.png?asset'
+// .ico on purpose: Windows picks the right size for the tray (16), title bar and taskbar
+import iconPath from '../../resources/icon.ico?asset'
 import { grabScreen, snapTeammates } from './capture'
 import { applyOverlay, overlayWindow } from './overlay'
 import { Storage } from './storage'
@@ -460,7 +461,7 @@ function updateTrayMenu(): void {
 }
 
 function createTray(): void {
-  tray = new Tray(nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 }))
+  tray = new Tray(nativeImage.createFromPath(iconPath))
   tray.on('click', showMainWindow)
   updateTrayMenu()
 }

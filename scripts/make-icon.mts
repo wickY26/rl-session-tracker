@@ -1,4 +1,5 @@
 /** Writes resources/icon.png: dark rounded square, three rising bars (1v1/2v2/3v3 colours) and a trend line. */
+import { writeFileSync } from 'node:fs'
 import { Jimp } from 'jimp'
 
 const S = 256
@@ -29,4 +30,34 @@ for (let y = 0; y < S; y++)
     img.setPixelColor(c >>> 0, x, y)
   }
 await img.write('resources/icon.png')
-console.log('resources/icon.png')
+
+/**
+ * Windows icon with every size it asks for (tray 16, title bar 24/32, taskbar 32/48, explorer 64–256).
+ * ICO entries hold PNG data (supported since Vista), downscaled from the 256 px drawing.
+ */
+const SIZES = [16, 24, 32, 48, 64, 128, 256]
+const pngs: Buffer[] = []
+for (const size of SIZES) {
+  const copy = img.clone()
+  if (size !== S) copy.resize({ w: size, h: size })
+  pngs.push(await copy.getBuffer('image/png'))
+}
+const header = Buffer.alloc(6 + 16 * SIZES.length)
+header.writeUInt16LE(0, 0) // reserved
+header.writeUInt16LE(1, 2) // type: icon
+header.writeUInt16LE(SIZES.length, 4)
+let offset = header.length
+SIZES.forEach((size, i) => {
+  const e = 6 + i * 16
+  header.writeUInt8(size === 256 ? 0 : size, e) // 0 means 256
+  header.writeUInt8(size === 256 ? 0 : size, e + 1)
+  header.writeUInt8(0, e + 2) // palette colours
+  header.writeUInt8(0, e + 3) // reserved
+  header.writeUInt16LE(1, e + 4) // colour planes
+  header.writeUInt16LE(32, e + 6) // bits per pixel
+  header.writeUInt32LE(pngs[i].length, e + 8)
+  header.writeUInt32LE(offset, e + 12)
+  offset += pngs[i].length
+})
+writeFileSync('resources/icon.ico', Buffer.concat([header, ...pngs]))
+console.log('resources/icon.png, resources/icon.ico')
