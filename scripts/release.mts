@@ -28,8 +28,9 @@ function gh(): string {
   throw new Error('GitHub CLI not found: install it and run `gh auth login`.')
 }
 
-const run = (cmd: string, args: string[]) => {
-  const res = spawnSync(cmd, args, { stdio: 'inherit', shell: false })
+const run = (cmd: string, args: string[], shell = false) => {
+  const res = spawnSync(cmd, args, { stdio: 'inherit', shell })
+  if (res.error) throw res.error
   if (res.status !== 0) process.exit(res.status ?? 1)
 }
 
@@ -38,7 +39,8 @@ const exists = spawnSync(ghBin, ['release', 'view', tag, '-R', REPO], { stdio: '
 if (exists) throw new Error(`${tag} is already released — bump "version" in package.json first.`)
 
 console.log(`Building ${tag}…`)
-run(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', 'dist'])
+// npm is a .cmd on Windows, which Node only starts through a shell
+run('npm', ['run', 'dist'], true)
 
 const files = [`release/RLSessionTracker-Setup-${version}.exe`, `release/RLSessionTracker-Setup-${version}.exe.blockmap`, 'release/latest.yml']
 for (const f of files) if (!existsSync(f)) throw new Error(`missing build output: ${f}`)
