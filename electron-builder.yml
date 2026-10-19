@@ -1,0 +1,29 @@
+appId: com.rlsessiontracker.app
+productName: RL Session Tracker
+directories:
+  output: release
+  buildResources: build
+files:
+  - out/**
+  - package.json
+  - '!**/*.map'
+# tesseract.js runs OCR in worker_threads from node_modules; it can't load from inside an asar, so asar is off
+asar: false
+win:
+  icon: resources/icon.png
+  target:
+    - target: nsis
+      arch: [x64]
+  artifactName: RLSessionTracker-Setup-${version}.exe
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  perMachine: false
+  createDesktopShortcut: true
+# Releases (installer + latest.yml) live on GitHub; installed apps check them for updates.
+# The repo must stay public: update checks don't sign in.
+publish:
+  provider: github
+  owner: wickY26
+  repo: rl-session-tracker
+  releaseType: release

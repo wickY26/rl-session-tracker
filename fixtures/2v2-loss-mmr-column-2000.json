@@ -1,0 +1,64 @@
+{
+  "accountName": "wickY26",
+  "mode": "2v2",
+  "winner": 0,
+  "casual": false,
+  "me": {
+    "team": 1,
+    "index": 1
+  },
+  "teams": [
+    {
+      "players": [
+        {
+          "name": "ryn.see",
+          "mmr": 1256,
+          "mmrDelta": 10,
+          "party": false,
+          "score": 770,
+          "goals": 2,
+          "assists": 1,
+          "saves": 4,
+          "shots": 6
+        },
+        {
+          "name": "JMZ5.",
+          "mmr": 1273,
+          "mmrDelta": 9,
+          "party": false,
+          "score": 497,
+          "goals": 1,
+          "assists": 0,
+          "saves": 4,
+          "shots": 1
+        }
+      ]
+    },
+    {
+      "players": [
+        {
+          "name": "endieych",
+          "mmr": 1239,
+          "mmrDelta": -9,
+          "party": true,
+          "score": 517,
+          "goals": 1,
+          "assists": 1,
+          "saves": 1,
+          "shots": 6
+        },
+        {
+          "name": "wickY26",
+          "mmr": 1244,
+          "mmrDelta": -9,
+          "party": true,
+          "score": 434,
+          "goals": 1,
+          "assists": 1,
+          "saves": 2,
+          "shots": 7
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "accountName": "endieych",
+  "mode": "2v2",
+  "winner": 0,
+  "casual": true,
+  "me": {
+    "team": 1,
+    "index": 0
+  },
+  "teams": [
+    {
+      "players": [
+        {
+          "name": "wicky26",
+          "mmr": null,
+          "mmrDelta": null,
+          "party": true,
+          "score": 579,
+          "goals": 2,
+          "assists": 1,
+          "saves": 1,
+          "shots": 5
+        },
+        {
+          "name": "damdakideli",
+          "mmr": null,
+          "mmrDelta": null,
+          "party": true,
+          "score": 292,
+          "goals": 1,
+          "assists": 0,
+          "saves": 2,
+          "shots": 2
+        }
+      ]
+    },
+    {
+      "players": [
+        {
+          "name": "endieych",
+          "mmr": null,
+          "mmrDelta": null,
+          "party": true,
+          "score": 585,
+          "goals": 2,
+          "assists": 0,
+          "saves": 2,
+          "shots": 6
+        },
+        {
+          "name": "orkuno",
+          "mmr": null,
+          "mmrDelta": null,
+          "party": true,
+          "score": 423,
+          "goals": 0,
+          "assists": 2,
+          "saves": 2,
+          "shots": 3
+        }
+      ]
+    }
+  ]
+}

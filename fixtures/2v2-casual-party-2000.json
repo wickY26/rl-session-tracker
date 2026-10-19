@@ -1,0 +1,64 @@
+{
+  "accountName": "wickY26",
+  "mode": "2v2",
+  "winner": 0,
+  "casual": true,
+  "me": {
+    "team": 1,
+    "index": 0
+  },
+  "teams": [
+    {
+      "players": [
+        {
+          "name": "ZeNoThEoMnIGoD",
+          "mmr": null,
+          "mmrDelta": null,
+          "party": true,
+          "score": 738,
+          "goals": 3,
+          "assists": 1,
+          "saves": 2,
+          "shots": 3
+        },
+        {
+          "name": "proste_cenda",
+          "mmr": null,
+          "mmrDelta": null,
+          "party": true,
+          "score": 402,
+          "goals": 1,
+          "assists": 2,
+          "saves": 1,
+          "shots": 3
+        }
+      ]
+    },
+    {
+      "players": [
+        {
+          "name": "wickY26",
+          "mmr": null,
+          "mmrDelta": null,
+          "party": false,
+          "score": 492,
+          "goals": 1,
+          "assists": 2,
+          "saves": 2,
+          "shots": 3
+        },
+        {
+          "name": "QuintVB13",
+          "mmr": null,
+          "mmrDelta": null,
+          "party": false,
+          "score": 426,
+          "goals": 2,
+          "assists": 0,
+          "saves": 0,
+          "shots": 4
+        }
+      ]
+    }
+  ]
+}
