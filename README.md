@@ -71,8 +71,9 @@ Installed apps check [the GitHub releases](https://github.com/wickY26/rl-session
 public for that.
 
 1. Bump `version` in `package.json` (e.g. `0.1.0` → `0.2.0`).
-2. `npm run release` — builds the installer and publishes `v<version>` with `latest.yml`. It uses `GH_TOKEN` if set,
-   otherwise the GitHub CLI login (`gh auth login` once).
+2. Commit and push.
+3. `npm run release` — builds the installer and publishes `v<version>` (installer, blockmap, `latest.yml`) with the
+   GitHub CLI (`gh auth login` once). It refuses a version that is already released.
 
 ### Adding a screenshot the reader gets wrong
 
