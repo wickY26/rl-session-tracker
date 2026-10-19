@@ -1,0 +1,345 @@
+/* Session view: tiles, match cards, "you vs the lobby" comparison */
+
+:root {
+  --green-soft: rgba(62, 207, 142, 0.12);
+  --gold-soft: rgba(245, 197, 66, 0.12);
+}
+.mode-block {
+  margin-bottom: 28px;
+}
+.mode-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+  font-size: 15px;
+}
+.mode-badge {
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+.mode-badge.m1 {
+  background: var(--green-soft);
+  color: var(--green);
+}
+.mode-badge.m2 {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+.mode-badge.m3 {
+  background: var(--orange-soft);
+  color: var(--orange);
+}
+
+/* Tiles: a coloured top edge carries the meaning, the value colour repeats it */
+.tiles {
+  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+  margin-bottom: 16px;
+}
+.tile {
+  border-top: 3px solid var(--line);
+}
+.tile.wide {
+  grid-column: span 2;
+}
+.tile.wide .tile-value {
+  font-size: 28px;
+}
+.tile.pos {
+  border-top-color: var(--green);
+  background: linear-gradient(var(--green-soft), transparent 70%), var(--panel-2);
+}
+.tile.pos .tile-value {
+  color: var(--green);
+}
+.tile.neg {
+  border-top-color: var(--red);
+  background: linear-gradient(var(--red-soft), transparent 70%), var(--panel-2);
+}
+.tile.neg .tile-value {
+  color: var(--red);
+}
+.tile.gold {
+  border-top-color: var(--gold);
+}
+.tile.gold .tile-value {
+  color: var(--gold);
+}
+.tile.info {
+  border-top-color: rgba(47, 140, 255, 0.5);
+}
+
+.mode-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 16px;
+  align-items: start;
+}
+@media (max-width: 1100px) {
+  .mode-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.mode-grid .side {
+  position: sticky;
+  top: 0;
+  margin-bottom: 0;
+}
+.match-cards {
+  display: grid;
+  gap: 10px;
+}
+
+.match-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.match-card.win {
+  border-left-color: var(--green);
+}
+.match-card.loss {
+  border-left-color: var(--red);
+}
+.match-card > header,
+.match-card > footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+}
+.match-card > header {
+  border-bottom: 1px solid var(--line);
+}
+.match-card .spacer {
+  flex: 1;
+}
+.mc-result {
+  font-weight: 800;
+  letter-spacing: 1px;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.win .mc-result {
+  background: var(--green-soft);
+  color: var(--green);
+}
+.loss .mc-result {
+  background: var(--red-soft);
+  color: var(--red);
+}
+.mc-score {
+  font-size: 18px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.mmr-pill {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.mmr-pill.pos {
+  background: var(--green-soft);
+  color: var(--green);
+}
+.mmr-pill.neg {
+  background: var(--red-soft);
+  color: var(--red);
+}
+.mmr-pill .after {
+  color: var(--text);
+  font-weight: 600;
+}
+.mc-actions {
+  display: flex;
+}
+.mc-teams {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.mc-team {
+  padding: 8px 14px;
+}
+.mc-team.opp {
+  border-left: 1px solid var(--line);
+}
+.mc-team-head,
+.mc-team li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 52px 48px;
+  gap: 8px;
+  align-items: center;
+}
+.mc-team-head {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding-bottom: 4px;
+}
+.mc-team-head span + span,
+.pc-mmr,
+.pc-score {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.mc-team ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.mc-team li {
+  padding: 3px 6px;
+  margin: 0 -6px;
+  border-radius: 6px;
+}
+.mc-team li.me {
+  background: var(--blue-soft);
+  font-weight: 700;
+}
+.pc-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pc-name .party {
+  margin-right: 5px;
+  font-size: 10px;
+}
+.pc-mmr {
+  color: var(--muted);
+}
+.you {
+  margin-left: 6px;
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--blue);
+  letter-spacing: 0.5px;
+}
+.match-card > footer {
+  border-top: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.015);
+  flex-wrap: wrap;
+}
+.mc-line {
+  color: var(--muted);
+}
+.mc-line b {
+  color: var(--text);
+}
+.chip-tone {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 999px;
+}
+.chip-tone.gold {
+  background: var(--gold-soft);
+  color: var(--gold);
+}
+.chip-tone.pos {
+  background: var(--green-soft);
+  color: var(--green);
+}
+.chip-tone.neg {
+  background: var(--red-soft);
+  color: var(--red);
+}
+.chip-tone.info {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.compare-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  margin-bottom: 14px;
+}
+.compare-big {
+  font-size: 22px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.compare-legend {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  color: var(--muted);
+  font-size: 12px;
+}
+.compare-legend span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sw {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  display: inline-block;
+}
+.compare-rows {
+  display: grid;
+  gap: 12px;
+}
+.compare-row {
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  gap: 10px;
+}
+.compare-label {
+  color: var(--muted);
+  font-size: 12px;
+  padding-top: 1px;
+}
+.lead {
+  display: block;
+  color: var(--gold);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+.compare-bars {
+  display: grid;
+  gap: 3px;
+}
+.bar-line {
+  display: grid;
+  grid-template-columns: 1fr 40px;
+  align-items: center;
+  gap: 8px;
+}
+.bar {
+  height: 8px;
+  border-radius: 4px;
+  min-width: 2px;
+}
+.bar-value {
+  font-size: 12px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.sw.me,
+.bar.me {
+  background: var(--gold);
+}
+.sw.mates,
+.bar.mates {
+  background: var(--blue);
+}
+.sw.opp,
+.bar.opp {
+  background: var(--red);
+  opacity: 0.8;
+}
+.compare-big.info {
+  color: var(--blue);
+}

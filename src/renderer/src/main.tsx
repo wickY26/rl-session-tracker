@@ -4,6 +4,7 @@ import { App } from './App'
 import { Confirm } from './Confirm'
 import { Overlay } from './Overlay'
 import './styles.css'
+import './session.css'
 
 // One renderer build, three windows: the hash picks which one this is
 const view = window.location.hash.replace('#', '').split('&')[0]

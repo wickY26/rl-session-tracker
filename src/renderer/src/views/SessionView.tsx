@@ -1,7 +1,8 @@
 import { sessionMatches } from '../../../core/sessions'
 import { ofMode, sessionSummaries } from '../../../core/stats'
 import type { Session, Settings, TrackerData } from '../../../core/types'
-import { MatchList } from '../components/MatchList'
+import { Comparison } from '../components/Comparison'
+import { MatchCard } from '../components/MatchCard'
 import { Tiles } from '../components/Tiles'
 import { formatDate, formatTime } from '../format'
 
@@ -59,20 +60,36 @@ export function SessionView({ data, session, settings }: { data: TrackerData; se
         </div>
       )}
 
-      {summaries.map((s) => (
-        <div className="section" key={s.mode}>
-          <header>
-            <h2>{s.mode}</h2>
-            <span className="hint">
-              {s.matches} match{s.matches === 1 ? '' : 'es'}
-            </span>
-          </header>
-          <div className="section-body">
+      {summaries.map((s) => {
+        const modeMatches = ofMode(matches, s.mode)
+        return (
+          <section className="mode-block" key={s.mode} aria-label={`${s.mode} results`}>
+            <h2 className="mode-title">
+              <span className={`mode-badge m${s.mode[0]}`}>{s.mode}</span>
+              <span className="sub">
+                {s.matches} match{s.matches === 1 ? '' : 'es'}
+              </span>
+            </h2>
             <Tiles summary={s} />
-          </div>
-          <MatchList matches={ofMode(matches, s.mode)} />
-        </div>
-      ))}
+            <div className="mode-grid">
+              <div className="match-cards">
+                {[...modeMatches].reverse().map((m) => (
+                  <MatchCard key={m.id} match={m} />
+                ))}
+              </div>
+              <aside className="section side">
+                <header>
+                  <h2>You vs the lobby</h2>
+                  <span className="hint">averages per match</span>
+                </header>
+                <div className="section-body">
+                  <Comparison matches={modeMatches} />
+                </div>
+              </aside>
+            </div>
+          </section>
+        )
+      })}
     </>
   )
 }

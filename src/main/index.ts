@@ -549,6 +549,8 @@ async function runSelftest(images: string, out: string): Promise<void> {
       writeFileSync(join(out, 'overlay.png'), (await overlay.webContents.capturePage()).toPNG())
     }
     mainWindow?.show()
+    // Tall enough to see more than the first screen of a tab
+    if (process.env.RLST_SELFTEST_HEIGHT) mainWindow?.setContentSize(1280, Number(process.env.RLST_SELFTEST_HEIGHT))
     for (const tab of (process.env.RLST_SELFTEST_TABS ?? 'Session').split(',')) {
       loadRenderer(mainWindow!, `tab=${encodeURIComponent(tab)}`)
       await wait(1500)
