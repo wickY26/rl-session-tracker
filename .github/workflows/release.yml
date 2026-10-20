@@ -4,7 +4,7 @@
 # Signing turns on once these repository settings exist (Settings → Secrets and variables → Actions):
 #   secret   SIGNPATH_API_TOKEN
 #   variable SIGNPATH_ORGANIZATION_ID, SIGNPATH_PROJECT_SLUG, SIGNPATH_SIGNING_POLICY_SLUG,
-#            SIGNPATH_ARTIFACT_CONFIGURATION_SLUG
+#            SIGNPATH_ARTIFACT_CONFIGURATION_SLUG (its XML: .signpath/artifact-configuration.xml)
 # Without them the installer is published unsigned. Every signing request waits for manual approval in SignPath.
 name: Release
 
@@ -59,7 +59,7 @@ jobs:
 
       - name: Sign with SignPath (waits for approval)
         if: env.SIGN == 'true'
-        uses: signpath/github-action-submit-signing-request@v2
+        uses: signpath/github-action-submit-signing-request@v3
         with:
           api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
           organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
