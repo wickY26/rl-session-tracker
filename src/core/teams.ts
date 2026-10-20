@@ -14,7 +14,8 @@ export function teammates(m: MatchLike): PlayerLine[] {
  */
 export function teamKey(m: MatchLike): string | null {
   const mates = teammates(m)
-  if (!mates.length || mates.some((p) => !p.party)) return null
+  // An unreadable teammate name can't be told apart from other friends: no team until it's fixed
+  if (!mates.length || mates.some((p) => !p.party || !p.name.trim())) return null
   return `${m.mode}:${mates
     .map((p) => p.name.toLowerCase())
     .sort()

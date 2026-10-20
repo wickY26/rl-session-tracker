@@ -159,8 +159,10 @@ Format changes bump `schemaVersion` with a migration.
 - **Party icon:** green-pixel detection in the strip between avatar and name (pure function on an image crop).
 - Digits in stat columns use the existing template matcher; templates are regenerated from the new fixtures
   (resolutions seen: 1920×1080, 2000×1125, plus noob-league's 1600×900).
-- Unreadable fields → `null` + warning; the card marks them red. Required to save: mode, winner, my row with MMR + delta,
-  every player's name; stats may be corrected by hand.
+- Unreadable fields → `null`; the reader leaves a value empty rather than guess. **Required to save: only my row and
+  the winner** (both come from the screenshot nearly always), so F8 never stops a session for typing. Every other value
+  — names, MMR, stats, mine included — may be empty: the card marks it amber, the match is saved, and it shows a
+  **Needs review** badge (Session/Matches) that opens the editor. Stats and averages skip empty values.
 
 ## Behaviour
 | Key (default, configurable) | Action |

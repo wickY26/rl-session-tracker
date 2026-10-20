@@ -1,6 +1,7 @@
 import { sessionMatches } from '../../../core/sessions'
 import { ofMode, sessionSummaries } from '../../../core/stats'
 import type { Session, Settings, TrackerData } from '../../../core/types'
+import { needsReview } from '../../../core/validate'
 import { Comparison } from '../components/Comparison'
 import { MatchCard } from '../components/MatchCard'
 import { Tiles } from '../components/Tiles'
@@ -42,6 +43,9 @@ export function SessionView({ data, session, settings }: { data: TrackerData; se
           <div className="sub">
             {formatTime(session.startedAt)} – {live ? 'now' : formatTime(session.endedAt!)} · {duration(session.startedAt, live ? new Date().toISOString() : session.endedAt!)} ·{' '}
             {matches.length} match{matches.length === 1 ? '' : 'es'}
+            {matches.some(needsReview) && (
+              <span className="review-count"> · {matches.filter(needsReview).length} to review (yellow badges)</span>
+            )}
             {session.endReason === 'idle' && ` · closed after ${settings.sessionIdleMinutes} min idle (last match ${formatTime(last)})`}
           </div>
         </div>

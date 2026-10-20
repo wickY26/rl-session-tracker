@@ -8,10 +8,16 @@ export const DEFAULT_PLAYLIST: Record<Mode, Playlist> = { '1v1': 'duel', '2v2': 
 
 export const STAT_KEYS = ['score', 'goals', 'assists', 'saves', 'shots'] as const
 export type StatKey = (typeof STAT_KEYS)[number]
+/** Averages and other computed stats: always numbers. */
 export type Stats = Record<StatKey, number>
+/**
+ * One player's stats as read from the scoreboard: null where a cell couldn't be read. The match is
+ * saved anyway and shows up as "needs review", so nothing has to be typed in during a session.
+ */
+export type StatLine = Record<StatKey, number | null>
 
-export interface PlayerLine extends Stats {
-  /** Name as read/corrected, club tags and MMR bracket removed. */
+export interface PlayerLine extends StatLine {
+  /** Name as read/corrected, club tags and MMR bracket removed; '' when unreadable. */
   name: string
   /** MMR shown in `[905 + 9]` → 905. Null when not readable. */
   mmr: number | null
@@ -22,7 +28,8 @@ export interface PlayerLine extends Stats {
 }
 
 export interface TeamResult {
-  goals: number
+  /** Sum of the players' goals; null when one of them is unreadable. */
+  goals: number | null
   players: PlayerLine[]
 }
 

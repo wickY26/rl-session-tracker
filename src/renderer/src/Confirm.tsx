@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { findDuplicate } from '../../core/teams'
 import { DEFAULT_PLAYLIST, MODES, STAT_KEYS, type Mode, type NewMatch, type Playlist, type PlayerRef, type StatKey } from '../../core/types'
-import { matchErrors } from '../../core/validate'
+import { matchErrors, missingFields } from '../../core/validate'
 import type { ScoreboardReading, TeamColor } from '../../ocr/types'
 import type { AppState, ConfirmPayload } from '../../shared/api'
 import { IntInput } from './components/IntInput'
@@ -70,20 +70,13 @@ function goalsOf(t: DraftTeam): number | null {
   return sum
 }
 
-/** Draft → match, or null while required cells are empty. */
+/** Draft → match, or null until the winner and my row are known. Empty cells stay empty (null). */
 function toMatch(d: Draft): NewMatch | null {
   if (d.winner === null || !d.me) return null
-  const teams = d.teams.map((t) => {
-    const goals = goalsOf(t)
-    if (goals === null) return null
-    const players = t.players.map((p) => {
-      if (STAT_KEYS.some((k) => p.stats[k] === null)) return null
-      return { name: p.name.trim(), mmr: p.mmr, mmrDelta: p.mmrDelta, party: p.party, ...(p.stats as Record<StatKey, number>) }
-    })
-    if (players.some((p) => !p)) return null
-    return { goals, players: players as NewMatch['teams'][0]['players'] }
-  })
-  if (teams.some((t) => !t)) return null
+  const teams = d.teams.map((t) => ({
+    goals: goalsOf(t),
+    players: t.players.map((p) => ({ name: p.name.trim(), mmr: p.mmr, mmrDelta: p.mmrDelta, party: p.party, ...p.stats }))
+  }))
   return {
     mode: d.mode,
     playlist: d.playlist,
@@ -116,19 +109,22 @@ export function Confirm() {
   }, [])
 
   const editId = payload?.status === 'edit' ? payload.matchId : null
-  const ocrWarnings = payload?.status === 'ready' ? payload.reading.warnings : []
+  // Unreadable values are summarised by the "missing" note instead of one warning each
+  const ocrWarnings = (payload?.status === 'ready' ? payload.reading.warnings : []).filter(
+    (w) => !/not readable|Unreadable player name/.test(w)
+  )
 
   const match = useMemo(() => (draft ? toMatch(draft) : null), [draft])
 
   const checks = useMemo(() => {
     if (!draft || !state) return { warnings: [] as string[], blocking: [] as string[] }
-    if (!match) return { warnings: [], blocking: ['Missing fields (red boxes), the winner or which row is you — fill them in to save'] }
+    if (!match) return { warnings: [], blocking: ['Pick the winning team and which row is you'] }
     const blocking = matchErrors(match)
     const others = editId ? state.data.matches.filter((m) => m.id !== editId) : state.data.matches
     const duplicate = findDuplicate(others, match)
     const warnings = duplicate ? ['This scoreboard looks already saved (same names and stats)'] : []
     const [a, b] = match.teams.map((t) => t.goals)
-    if (a !== b && (a > b ? 0 : 1) !== match.winner) {
+    if (a !== null && b !== null && a !== b && (a > b ? 0 : 1) !== match.winner) {
       warnings.push('Goal totals point to the other team — check the goals (own goals can cause this too)')
     }
     const myDelta = match.teams[match.me.team].players[match.me.index]?.mmrDelta
@@ -245,6 +241,12 @@ export function Confirm() {
 
         {draft && state && (
           <>
+            {match && missingFields(match).length > 0 && (
+              <div className="banner missing-note">
+                {missingFields(match).length} value{missingFields(match).length === 1 ? '' : 's'} couldn’t be read (amber) — saving keeps them
+                empty. Fill them in now or later: the match shows <strong>Needs review</strong>.
+              </div>
+            )}
             {checks.blocking.length + checks.warnings.length + ocrWarnings.length + saveErrors.length > 0 && (
               <ul className="warn-list">
                 {[...new Set([...saveErrors, ...checks.blocking])].map((w) => (
@@ -321,14 +323,14 @@ export function Confirm() {
                             <td className="left">
                               <input
                                 ref={ti === 0 && pi === 0 ? firstInput : undefined}
-                                className={`name ${p.name.trim() ? '' : 'invalid'}`}
+                                className={`name ${p.name.trim() ? '' : 'missing'}`}
                                 value={p.name}
                                 onChange={(e) => updatePlayer(ti, pi, (x) => ({ ...x, name: e.target.value }))}
                               />
                             </td>
                             <td>
                               <IntInput
-                                className={`mmr ${isMe && p.mmr === null ? 'invalid' : ''}`}
+                                className={`mmr ${p.mmr === null ? 'missing' : ''}`}
                                 value={p.mmr}
                                 onChange={(v) => updatePlayer(ti, pi, (x) => ({ ...x, mmr: v }))}
                               />
@@ -336,7 +338,7 @@ export function Confirm() {
                             <td>
                               <IntInput
                                 signed
-                                className={`mmr ${isMe && p.mmrDelta === null ? 'invalid' : ''}`}
+                                className={`mmr ${p.mmrDelta === null ? 'missing' : ''}`}
                                 value={p.mmrDelta}
                                 onChange={(v) => updatePlayer(ti, pi, (x) => ({ ...x, mmrDelta: v }))}
                               />
@@ -356,7 +358,7 @@ export function Confirm() {
                             {STAT_KEYS.map((k) => (
                               <td key={k}>
                                 <IntInput
-                                  className={`stat ${p.stats[k] === null ? 'invalid' : ''}`}
+                                  className={`stat ${p.stats[k] === null ? 'missing' : ''}`}
                                   value={p.stats[k]}
                                   onChange={(v) =>
                                     updatePlayer(ti, pi, (x) => ({ ...x, stats: { ...x.stats, [k]: v === null ? null : Math.max(0, v) } }))

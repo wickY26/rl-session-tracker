@@ -1,4 +1,4 @@
-import { MODES, STAT_KEYS, type Match, type Mode, type PlayerLine, type Stats, type TeamResult } from './types'
+import { MODES, STAT_KEYS, type Match, type Mode, type PlayerLine, type StatLine, type Stats, type TeamResult } from './types'
 
 export function myLine(m: Match): PlayerLine {
   return m.teams[m.me.team].players[m.me.index]
@@ -19,9 +19,9 @@ export function mmrBefore(line: PlayerLine): number | null {
 
 /** MVP = highest score on the winning team. */
 export function isMvp(m: Match): boolean {
-  if (!isWin(m)) return false
-  const top = Math.max(...myTeam(m).players.map((p) => p.score))
-  return myLine(m).score === top
+  const mine = myLine(m).score
+  if (!isWin(m) || mine === null) return false
+  return myTeam(m).players.every((p) => p.score === null || p.score <= mine)
 }
 
 export function ofMode(matches: readonly Match[], mode: Mode): Match[] {
@@ -47,9 +47,13 @@ export function currentStreak(matches: readonly Match[]): Streak | null {
   return { kind, count }
 }
 
-export function averages(lines: readonly PlayerLine[]): Stats {
+/** Per-stat averages over the values that were read; unreadable cells are left out, not counted as 0. */
+export function averages(lines: readonly StatLine[]): Stats {
   const out = {} as Stats
-  for (const key of STAT_KEYS) out[key] = lines.length ? lines.reduce((s, l) => s + l[key], 0) / lines.length : 0
+  for (const key of STAT_KEYS) {
+    const values = lines.map((l) => l[key]).filter((v): v is number => v !== null)
+    out[key] = values.length ? values.reduce((s, v) => s + v, 0) / values.length : 0
+  }
   return out
 }
 

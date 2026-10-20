@@ -23,7 +23,7 @@ export function Comparison({ matches }: { matches: readonly Match[] }) {
         <div>
           <div className="tile-label">Lobby rank by score</div>
           <div className="compare-big">
-            #{c.avgLobbyRank.toFixed(1)} <span className="sub">of {c.lobbySize} on average</span>
+            {c.avgLobbyRank === null ? '—' : `#${c.avgLobbyRank.toFixed(1)}`} <span className="sub">of {c.lobbySize} on average</span>
           </div>
         </div>
         {gap !== null && (

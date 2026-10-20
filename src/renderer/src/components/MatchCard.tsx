@@ -1,5 +1,6 @@
 import { matchChips, matchInsight, opponents } from '../../../core/insights'
 import { isWin, myLine, myTeam } from '../../../core/stats'
+import { missingFields } from '../../../core/validate'
 import type { Match, PlayerLine } from '../../../core/types'
 import { formatTime, signed } from '../format'
 
@@ -16,7 +17,7 @@ function PlayerRow({ p, me }: { p: PlayerLine; me: boolean }) {
         {me && <span className="you">you</span>}
       </span>
       <span className="pc-mmr">{p.mmr ?? '—'}</span>
-      <span className="pc-score">{p.score}</span>
+      <span className="pc-score">{p.score ?? '—'}</span>
     </li>
   )
 }
@@ -25,8 +26,11 @@ function PlayerRow({ p, me }: { p: PlayerLine; me: boolean }) {
 export function MatchCard({ match: m, showDate }: { match: Match; showDate?: string }) {
   const won = isWin(m)
   const me = myLine(m)
-  const mine = [...myTeam(m).players].sort((a, b) => b.score - a.score)
-  const theirs = [...opponents(m)].sort((a, b) => b.score - a.score)
+  // Score order; unreadable scores last
+  const byScore = (a: PlayerLine, b: PlayerLine) => (b.score ?? -1) - (a.score ?? -1)
+  const mine = [...myTeam(m).players].sort(byScore)
+  const theirs = [...opponents(m)].sort(byScore)
+  const missing = missingFields(m)
   const myGoals = myTeam(m).goals
   const theirGoals = m.teams[m.me.team === 0 ? 1 : 0].goals
   const insight = matchInsight(m)
@@ -37,13 +41,23 @@ export function MatchCard({ match: m, showDate }: { match: Match; showDate?: str
       <header>
         <span className="mc-result">{won ? 'WIN' : 'LOSS'}</span>
         <span className="mc-score">
-          {myGoals}–{theirGoals}
+          {myGoals ?? '?'}–{theirGoals ?? '?'}
         </span>
         <span className="sub">
           {showDate ? `${showDate} · ` : ''}
-          {formatTime(m.recordedAt)} · #{insight.lobbyRank} of {insight.lobbySize} by score
+          {formatTime(m.recordedAt)}
+          {insight.lobbyRank !== null && ` · #${insight.lobbyRank} of ${insight.lobbySize} by score`}
         </span>
         <span className="spacer" />
+        {missing.length > 0 && (
+          <button
+            className="review-badge"
+            onClick={() => void window.api.editMatch(m.id)}
+            title={["Couldn't be read — click to fill in:", ...missing.map((x) => x.label)].join('\n')}
+          >
+            Needs review · {missing.length}
+          </button>
+        )}
         {me.mmrDelta !== null && (
           <span className={`mmr-pill ${me.mmrDelta >= 0 ? 'pos' : 'neg'}`} title="MMR change → MMR after the match">
             {signed(me.mmrDelta)} <span className="after">→ {me.mmr ?? '?'}</span>
@@ -95,7 +109,7 @@ export function MatchCard({ match: m, showDate }: { match: Match; showDate?: str
 
       <footer>
         <span className="mc-line">
-          <b>{me.goals}</b> goals · <b>{me.assists}</b> assists · <b>{me.saves}</b> saves · <b>{me.shots}</b> shots
+          <b>{me.goals ?? '—'}</b> goals · <b>{me.assists ?? '—'}</b> assists · <b>{me.saves ?? '—'}</b> saves · <b>{me.shots ?? '—'}</b> shots
         </span>
         {insight.mmrGap !== null && insight.mmrGap !== 0 && (
           <span className="sub" title="Opponents' average MMR minus your team's">

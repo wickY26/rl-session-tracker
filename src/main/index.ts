@@ -16,7 +16,7 @@ import {
 import { isWin, myLine, sessionSummaries } from '../core/stats'
 import { setTeamTracked } from '../core/teams'
 import type { Match, NewMatch, Settings, TrackerData } from '../core/types'
-import { matchErrors } from '../core/validate'
+import { matchErrors, missingFields } from '../core/validate'
 import templates from '../ocr/digit-templates.json'
 import { ScoreboardReader } from '../ocr/reader'
 import type { AppState, ConfirmCommand, ConfirmPayload, SaveResult, SoundName } from '../shared/api'
@@ -297,7 +297,11 @@ function saveMatch(input: NewMatch, editId: string | null): SaveResult {
       next = { ...next, matches: next.matches.map((m) => (m.id === match.id ? { ...m, screenshot: ref } : m)) }
     }
     persist(next)
-    notify('Match saved', `${describeMatch(match)}${before ? '' : ' · New session started'}`)
+    const missing = missingFields(match).length
+    notify(
+      'Match saved',
+      `${describeMatch(match)}${before ? '' : ' · New session started'}${missing ? ` · ${missing} unread value${missing === 1 ? '' : 's'} to review later` : ''}`
+    )
   }
   sound('saved')
   hideConfirm()

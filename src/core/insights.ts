@@ -13,11 +13,11 @@ export function opponents(m: Match): PlayerLine[] {
 }
 
 export interface MatchInsight {
-  /** 1 = highest score of everyone in the match. */
-  lobbyRank: number
+  /** 1 = highest score of everyone in the match; null when my score is unreadable. */
+  lobbyRank: number | null
   lobbySize: number
-  /** My share of my team's total score (0..1). */
-  scoreShare: number
+  /** My share of my team's total score (0..1); null when a score on my team is unreadable. */
+  scoreShare: number | null
   myTeamMmr: number | null
   opponentMmr: number | null
   /** Opponents' average MMR minus my team's: positive = I was the underdog. */
@@ -27,13 +27,15 @@ export interface MatchInsight {
 export function matchInsight(m: Match): MatchInsight {
   const me = myLine(m)
   const everyone = m.teams.flatMap((t) => t.players)
-  const teamScore = myTeam(m).players.reduce((s, p) => s + p.score, 0)
+  const myScore = me.score
+  const teamScores = myTeam(m).players.map((p) => p.score)
+  const teamScore = teamScores.every((v) => v !== null) ? (teamScores as number[]).reduce((s, v) => s + v, 0) : null
   const myTeamMmr = avgMmr(myTeam(m).players)
   const opponentMmr = avgMmr(opponents(m))
   return {
-    lobbyRank: 1 + everyone.filter((p) => p.score > me.score).length,
+    lobbyRank: myScore === null ? null : 1 + everyone.filter((p) => p.score !== null && p.score > myScore).length,
     lobbySize: everyone.length,
-    scoreShare: teamScore ? me.score / teamScore : 0,
+    scoreShare: myScore === null || !teamScore ? null : myScore / teamScore,
     myTeamMmr,
     opponentMmr,
     mmrGap: myTeamMmr !== null && opponentMmr !== null ? Math.round(opponentMmr - myTeamMmr) : null
@@ -65,10 +67,10 @@ export function matchChips(m: Match): Chip[] {
     chips.push({ label: `Underdog win +${i.mmrGap}`, tone: 'pos', title: `Opponents averaged ${i.mmrGap} MMR more than your team` })
   if (i.mmrGap !== null && !won && i.mmrGap <= -GAP)
     chips.push({ label: `Upset loss ${i.mmrGap}`, tone: 'neg', title: `Opponents averaged ${-i.mmrGap} MMR less than your team` })
-  if (size > 1 && i.scoreShare >= (1 / size) * 1.3)
+  if (size > 1 && i.scoreShare !== null && i.scoreShare >= (1 / size) * 1.3)
     chips.push({ label: `Carried ${Math.round(i.scoreShare * 100)}%`, tone: 'info', title: 'Your share of your team’s total score' })
-  if (me.goals >= 3) chips.push({ label: me.goals === 3 ? 'Hat trick' : `${me.goals} goals`, tone: 'pos', title: 'Goals scored' })
-  if (me.saves >= 4) chips.push({ label: `Wall · ${me.saves} saves`, tone: 'info', title: 'Saves made' })
+  if (me.goals !== null && me.goals >= 3) chips.push({ label: me.goals === 3 ? 'Hat trick' : `${me.goals} goals`, tone: 'pos', title: 'Goals scored' })
+  if (me.saves !== null && me.saves >= 4) chips.push({ label: `Wall · ${me.saves} saves`, tone: 'info', title: 'Saves made' })
   return chips.slice(0, 3)
 }
 
@@ -78,8 +80,8 @@ export interface Comparison {
   opponents: Stats
   myMmr: number | null
   opponentMmr: number | null
-  /** Average of my lobby score rank, e.g. 1.8 (of lobbySize). */
-  avgLobbyRank: number
+  /** Average of my lobby score rank, e.g. 1.8 (of lobbySize); null when no score was readable. */
+  avgLobbyRank: number | null
   lobbySize: number
   matches: number
 }
@@ -98,7 +100,7 @@ export function compare(matches: readonly Match[]): Comparison | null {
     opponents: averages(matches.flatMap(opponents)),
     myMmr: mean(mmrs),
     opponentMmr: mean(opp),
-    avgLobbyRank: mean(insights.map((x) => x.lobbyRank))!,
+    avgLobbyRank: mean(insights.map((x) => x.lobbyRank).filter((v): v is number => v !== null)),
     lobbySize: Math.max(...insights.map((x) => x.lobbySize)),
     matches: matches.length
   }

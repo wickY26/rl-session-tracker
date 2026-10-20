@@ -1,5 +1,6 @@
 import { isMvp, isWin, myLine } from '../../../core/stats'
 import { teammates } from '../../../core/teams'
+import { missingFields } from '../../../core/validate'
 import type { Match } from '../../../core/types'
 import { formatDateTime, formatTime, signed } from '../format'
 
@@ -48,12 +49,17 @@ export function MatchList({ matches, showDate = false, showMode = false }: { mat
                     ))
                   : <span className="sub">—</span>}
               </td>
-              <td>{me.score}</td>
-              <td>{me.goals}</td>
-              <td>{me.assists}</td>
-              <td>{me.saves}</td>
-              <td>{me.shots}</td>
+              <td>{me.score ?? '—'}</td>
+              <td>{me.goals ?? '—'}</td>
+              <td>{me.assists ?? '—'}</td>
+              <td>{me.saves ?? '—'}</td>
+              <td>{me.shots ?? '—'}</td>
               <td className="row-actions">
+                {missingFields(m).length > 0 && (
+                  <button className="review-badge" onClick={() => void window.api.editMatch(m.id)} title="Some values couldn't be read — click to fill in">
+                    Review · {missingFields(m).length}
+                  </button>
+                )}
                 <button className="ghost" onClick={() => void window.api.editMatch(m.id)} title="Edit">
                   ✎
                 </button>

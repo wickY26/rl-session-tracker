@@ -111,7 +111,7 @@ describe('duplicate detection', () => {
     const input = match({ mates: [friend()] })
     const data = save([input])
     const other = structuredClone(input)
-    other.teams[0].players[0].saves += 1
+    other.teams[0].players[0].saves = (other.teams[0].players[0].saves ?? 0) + 1
     expect(findDuplicate(data.matches, other)).toBeNull()
   })
 })
