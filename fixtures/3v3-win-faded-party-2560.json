@@ -1,0 +1,89 @@
+{
+  "accountName": "wickY26",
+  "mode": "3v3",
+  "winner": 0,
+  "casual": false,
+  "me": {
+    "team": 0,
+    "index": 2
+  },
+  "teams": [
+    {
+      "players": [
+        {
+          "name": "endieych",
+          "mmr": 1076,
+          "mmrDelta": 9,
+          "party": true,
+          "score": 597,
+          "goals": 3,
+          "assists": 0,
+          "saves": 1,
+          "shots": 7
+        },
+        {
+          "name": "orkuno",
+          "mmr": 1028,
+          "mmrDelta": 9,
+          "party": true,
+          "score": 394,
+          "goals": 0,
+          "assists": 3,
+          "saves": 1,
+          "shots": 4
+        },
+        {
+          "name": "wickY26",
+          "mmr": 1110,
+          "mmrDelta": 10,
+          "party": true,
+          "score": 250,
+          "goals": 1,
+          "assists": 0,
+          "saves": 0,
+          "shots": 4
+        }
+      ]
+    },
+    {
+      "players": [
+        {
+          "name": "Walter Sach",
+          "mmr": 1088,
+          "mmrDelta": -15,
+          "party": true,
+          "score": 868,
+          "goals": 1,
+          "assists": 2,
+          "saves": 6,
+          "shots": 3
+        },
+        {
+          "name": "LilBLoser",
+          "mmr": 1044,
+          "mmrDelta": -14,
+          "party": false,
+          "score": 374,
+          "goals": 2,
+          "assists": 0,
+          "saves": 0,
+          "shots": 2
+        },
+        {
+          "name": "Vaezzan",
+          "mmr": 918,
+          "mmrDelta": -15,
+          "party": true,
+          "score": 134,
+          "goals": 0,
+          "assists": 0,
+          "saves": 1,
+          "shots": 2
+        }
+      ]
+    }
+  ],
+  "unreadable": [
+    "1.1.mmrDelta"
+  ]
+}

@@ -1,7 +1,7 @@
 import { Jimp } from 'jimp'
 import { describe, expect, it } from 'vitest'
 import type { Image } from '../src/ocr/image'
-import { greenRatio, hasPartyIcon, partyRegion, PARTY_MIN_RATIO } from '../src/ocr/party-icon'
+import { greenRatio, hasPartyIcon, isPartyGreen, partyRegion, PARTY_MIN_RATIO } from '../src/ocr/party-icon'
 
 const BLUE_ROW = 0x1e3c8cff
 const PARTY_GREEN = 0x6ccf3cff
@@ -37,5 +37,15 @@ describe('party icon', () => {
     const img = row()
     paint(img, 10, 15, 30, 30, PARTY_GREEN)
     expect(hasPartyIcon(img, nameX, center, h)).toBe(false)
+  })
+
+  it('matches the faded icon of a player who left, not the pitch or row colours', () => {
+    expect(isPartyGreen(42, 176, 0)).toBe(true)
+    expect(isPartyGreen(21, 81, 7)).toBe(true)
+    expect(isPartyGreen(47, 84, 4)).toBe(true)
+    expect(isPartyGreen(40, 90, 40)).toBe(false)
+    expect(isPartyGreen(79, 86, 56)).toBe(false)
+    expect(isPartyGreen(30, 60, 160)).toBe(false)
+    expect(isPartyGreen(200, 110, 30)).toBe(false)
   })
 })

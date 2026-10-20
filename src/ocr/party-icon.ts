@@ -1,9 +1,13 @@
 import { clampBox, type Image } from './image'
 import type { Box } from './types'
 
-/** Bright green of the party icon; the row backgrounds are blue/orange and text is white. */
-function isPartyGreen(r: number, g: number, b: number): boolean {
-  return g > 130 && g - r > 45 && g - b > 45
+/**
+ * Green of the party icon: bright (~42,176,0) on normal rows, dim (~21,81,7) on faded rows of players
+ * who left (pulled towards olive on orange rows, ~62,80,18). Relative test, and almost no blue: the green
+ * pitch showing through faded rows (~40,90,40) and the blue/orange row backgrounds don't match.
+ */
+export function isPartyGreen(r: number, g: number, b: number): boolean {
+  return g >= 55 && r < g * 0.8 && b < g * 0.35
 }
 
 /** Share of party-green pixels in the region. */
@@ -21,8 +25,11 @@ export function greenRatio(img: Image, region: Box): number {
   return total ? green / total : 0
 }
 
-/** Ratio above which the strip left of a name holds the party icon (icon fills ~20–35 % of it). */
-export const PARTY_MIN_RATIO = 0.06
+/**
+ * Share of green above which the strip left of a name holds the party icon. Measured on all fixtures:
+ * rows without the icon 0.000, rows with it 0.048–0.19 (faded rows at the low end).
+ */
+export const PARTY_MIN_RATIO = 0.02
 
 /**
  * Region just left of the name where the party icon sits (between avatar and name).

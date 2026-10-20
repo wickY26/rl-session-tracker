@@ -126,7 +126,17 @@ export function Confirm() {
     const blocking = matchErrors(match)
     const others = editId ? state.data.matches.filter((m) => m.id !== editId) : state.data.matches
     const duplicate = findDuplicate(others, match)
-    return { warnings: duplicate ? ['This scoreboard looks already saved (same names and stats)'] : [], blocking }
+    const warnings = duplicate ? ['This scoreboard looks already saved (same names and stats)'] : []
+    const [a, b] = match.teams.map((t) => t.goals)
+    if (a !== b && (a > b ? 0 : 1) !== match.winner) {
+      warnings.push('Goal totals point to the other team — check the goals (own goals can cause this too)')
+    }
+    const myDelta = match.teams[match.me.team].players[match.me.index]?.mmrDelta
+    const won = match.winner === match.me.team
+    if (myDelta !== null && myDelta !== undefined && myDelta !== 0 && myDelta > 0 !== won) {
+      warnings.push(`Your MMR ${myDelta > 0 ? 'went up' : 'went down'} but this is marked as a ${won ? 'win' : 'loss'} — check the winner or the ± value`)
+    }
+    return { warnings, blocking }
   }, [draft, state, match, editId])
 
   const close = useCallback(() => {
@@ -183,11 +193,9 @@ export function Confirm() {
     const teams = draft.teams.map((t, i) =>
       i === ti ? { ...t, players: t.players.map((p, j) => (j === pi ? fn(p) : p)) } : t
     ) as Draft['teams']
-    // The winner follows the goal totals unless they are level
-    let winner = draft.winner
-    const [a, b] = teams.map(goalsOf)
-    if (a !== null && b !== null && a !== b) winner = a > b ? 0 : 1
-    setDraft({ ...draft, teams, winner })
+    // The winner never follows the goal totals: it comes from the WINNER banner (or a click), and a
+    // misread goal cell must not silently turn a win into a loss
+    setDraft({ ...draft, teams })
   }
 
   const setMode = (mode: Mode) => {

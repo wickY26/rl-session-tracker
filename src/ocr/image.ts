@@ -148,7 +148,13 @@ export function isolateDigits(img: Image): boolean {
   // Blobs wider than half the image width are lines, not digits
   const candidates = blobs.filter((b) => b.box.x1 - b.box.x0 < width * 0.5 && b.box.y1 - b.box.y0 < height * 0.95)
   if (!candidates.length) return false
-  const main = candidates.reduce((a, b) => (b.box.y1 - b.box.y0 > a.box.y1 - a.box.y0 ? b : a))
+  // Reference digit: among the tall blobs, the one nearest the centre — digits are centred in their
+  // column, while background text (a bright "ROCKET LEAGUE" watermark behind a faded row) sits at the edge
+  const tallest = Math.max(...candidates.map((b) => b.box.y1 - b.box.y0))
+  const centre = (b: Blob) => Math.abs((b.box.x0 + b.box.x1) / 2 - width / 2)
+  const main = candidates
+    .filter((b) => b.box.y1 - b.box.y0 >= tallest * 0.6)
+    .reduce((a, b) => (centre(b) < centre(a) ? b : a))
   const mainH = main.box.y1 - main.box.y0
   if (mainH < height * 0.15) return false
   const mainCy = (main.box.y0 + main.box.y1) / 2

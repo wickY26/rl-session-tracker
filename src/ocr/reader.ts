@@ -367,27 +367,23 @@ export class ScoreboardReader {
     return null
   }
 
-  /** Reads a stat cell: global threshold first, local contrast when that fails (faded row, ball behind). */
+  /**
+   * Reads a stat cell both with a global threshold and with local contrast. They usually agree; when
+   * they don't, the more confident one wins. A faded digit can vanish under the global threshold while
+   * bright background text (a "ROCKET LEAGUE" watermark) remains and passes as a digit.
+   */
   async readNumber(img: Image, box: Box): Promise<number | null> {
-    return (await this.readNumberWith(img, box, false)) ?? (await this.readNumberWith(img, box, true))
+    const templates = this.options.templates
+    if (!templates || !Object.keys(templates).length) return this.readNumberTesseract(img, box)
+    const [global, local] = [false, true].map((adaptive) => readCell(img, box, adaptive, templates))
+    const best = !global ? local : !local ? global : local.score > global.score ? local : global
+    if (best && this.options.debugDir) this.debug('num', await toPaddedPng(best.piece), String(best.value))
+    return best?.value ?? null
   }
 
-  private async readNumberWith(img: Image, box: Box, adaptive: boolean): Promise<number | null> {
-    const piece = prepareDigits(img, box, adaptive)
+  private async readNumberTesseract(img: Image, box: Box): Promise<number | null> {
+    const piece = prepareDigits(img, box, false) ?? prepareDigits(img, box, true)
     if (!piece) return null
-    const templates = this.options.templates
-    if (templates && Object.keys(templates).length) {
-      const glyphs = segmentGlyphs(piece)
-      if (!glyphs.length || glyphs.length > 5) return null
-      let text = ''
-      for (const g of glyphs) {
-        const m = matchGlyph(normalizeGlyph(piece, g), templates)
-        if (!m || m.score < MIN_GLYPH_SCORE) return null
-        text += m.digit
-      }
-      if (this.options.debugDir) this.debug('num', await toPaddedPng(piece), text)
-      return Number(text)
-    }
     const png = await toPaddedPng(piece)
     const text = (await this.digitWorker!.recognize(png)).data.text
     this.debug('num', png, text)
@@ -425,6 +421,23 @@ export class ScoreboardReader {
     const bannerWinner = located.teams.findIndex((t) => t.bannerWords.some((w) => isLabel(w, 'WINNER')))
     return finalizeReading([teams[0], teams[1]], bannerWinner === -1 ? null : (bannerWinner as 0 | 1), this.options.accountName)
   }
+}
+
+/** One stat cell read with digit templates; `score` is the weakest digit's similarity. */
+function readCell(img: Image, box: Box, adaptive: boolean, templates: GlyphTemplates): { value: number; score: number; piece: Image } | null {
+  const piece = prepareDigits(img, box, adaptive)
+  if (!piece) return null
+  const glyphs = segmentGlyphs(piece)
+  if (!glyphs.length || glyphs.length > 5) return null
+  let text = ''
+  let score = 1
+  for (const g of glyphs) {
+    const m = matchGlyph(normalizeGlyph(piece, g), templates)
+    if (!m || m.score < MIN_GLYPH_SCORE) return null
+    text += m.digit
+    score = Math.min(score, m.score)
+  }
+  return { value: Number(text), score, piece }
 }
 
 export function parseNumber(text: string): number | null {

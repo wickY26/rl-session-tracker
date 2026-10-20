@@ -1,0 +1,69 @@
+{
+  "accountName": "wickY26",
+  "mode": "2v2",
+  "winner": 0,
+  "casual": false,
+  "me": {
+    "team": 0,
+    "index": 0
+  },
+  "unreadable": [
+    "1.0.mmr",
+    "1.0.mmrDelta",
+    "1.1.mmrDelta"
+  ],
+  "teams": [
+    {
+      "players": [
+        {
+          "name": "wickY26",
+          "mmr": 1263,
+          "mmrDelta": 10,
+          "party": true,
+          "score": 514,
+          "goals": 2,
+          "assists": 0,
+          "saves": 2,
+          "shots": 4
+        },
+        {
+          "name": "endieych",
+          "mmr": 1258,
+          "mmrDelta": 10,
+          "party": true,
+          "score": 419,
+          "goals": 1,
+          "assists": 1,
+          "saves": 1,
+          "shots": 4
+        }
+      ]
+    },
+    {
+      "players": [
+        {
+          "name": "kaaabomYT",
+          "mmr": 924,
+          "mmrDelta": -7,
+          "party": true,
+          "score": 308,
+          "goals": 0,
+          "assists": 0,
+          "saves": 3,
+          "shots": 1
+        },
+        {
+          "name": "Bernie BT",
+          "mmr": 1250,
+          "mmrDelta": -10,
+          "party": true,
+          "score": 246,
+          "goals": 0,
+          "assists": 0,
+          "saves": 1,
+          "shots": 1
+        }
+      ]
+    }
+  ]
+}
