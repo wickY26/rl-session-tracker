@@ -9,8 +9,13 @@ Free and open source ([MIT](LICENSE)) · [Code signing policy](#code-signing-pol
 
 ## Install
 
-Run `RLSessionTracker-Setup-x.y.z.exe`. The installer isn't code-signed, so Windows SmartScreen may say
-"Windows protected your PC" — click **More info → Run anyway**.
+Download `RLSessionTracker-Setup-x.y.z.exe` from the
+**[latest release](https://github.com/wickY26/rl-session-tracker/releases/latest)** and run it (Windows 10/11).
+
+Windows installers are signed through the SignPath Foundation: **free code signing provided by
+[SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org)** — see the
+[code signing policy](#code-signing-policy). Releases marked "unsigned build" (before signing was set up) make
+Windows SmartScreen say "Windows protected your PC": click **More info → Run anyway**.
 
 On first start, enter your Rocket League name exactly as it shows on the scoreboard (without club tag).
 Your current MMR per mode is optional; the first competitive screenshot fills it in.
@@ -130,7 +135,8 @@ user or the person installing or operating it — with one exception, which can 
   when you click to do so. The installer shows this notice before installing.
 
 Everything the app records — matches, sessions and scoreboard screenshots — stays on your PC
-(`%APPDATA%l-session-tracker\data\`). Screenshots are read locally (offline OCR); nothing is uploaded.
+(`%APPDATA%
+l-session-tracker\data\`). Screenshots are read locally (offline OCR); nothing is uploaded.
 
 ## License
 

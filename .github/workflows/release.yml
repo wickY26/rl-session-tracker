@@ -86,7 +86,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           notes="RL Session Tracker $VERSION"
-          if [ "$SIGN" != "true" ]; then notes="$notes (unsigned build)"; fi
+          if [ "$SIGN" = "true" ]; then
+            attribution="Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org)."
+            notes=$(printf '%s\n\n%s' "$notes" "$attribution")
+          else
+            notes="$notes (unsigned build)"
+          fi
           gh release create "$GITHUB_REF_NAME" \
             "release/RLSessionTracker-Setup-$VERSION.exe" \
             "release/RLSessionTracker-Setup-$VERSION.exe.blockmap" \
