@@ -24,10 +24,10 @@ import type { AppState, ConfirmCommand, ConfirmPayload, SaveResult, SoundName } 
 import iconPath from '../../resources/icon.ico?asset'
 import { grabScreen, snapTeammates } from './capture'
 import { applyOverlay, overlayWindow } from './overlay'
+import { appId, isInstalledCopy, repairStartMenuShortcut } from './app-identity'
 import { Storage } from './storage'
 import { Updater } from './updater'
 
-app.setAppUserModelId('com.rlsessiontracker.app')
 // Sounds play from a hidden window without a user gesture
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
 /**
@@ -37,6 +37,8 @@ app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
  * Runs in a separate data folder, so an installed, running app is not affected.
  */
 const selftest = process.env.RLST_SELFTEST
+// Only the installed app uses the real app ID; dev runs and self-tests must not register shortcuts for it
+app.setAppUserModelId(appId(isInstalledCopy() && !selftest))
 const selftestOut = process.env.RLST_SELFTEST_OUT
 if (selftest && selftestOut) app.setPath('userData', join(selftestOut, 'userdata'))
 if (!selftest && !app.requestSingleInstanceLock()) app.quit()
@@ -599,6 +601,11 @@ void app.whenReady().then(() => {
   if (!selftest) {
     registerHotkeys()
     applyAutoStart()
+    try {
+      repairStartMenuShortcut()
+    } catch {
+      // A shortcut problem must never stop the app
+    }
     createTray()
     setInterval(checkIdle, 60_000)
     checkIdle()
