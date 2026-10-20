@@ -81,6 +81,8 @@ export interface Settings {
   keepScreenshots: boolean
   autostart: boolean
   sounds: boolean
+  /** Ask GitHub for a newer release at start-up and every 6 h (the app's only network access). */
+  checkForUpdates: boolean
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -91,5 +93,6 @@ export const DEFAULT_SETTINGS: Settings = {
   overlay: { enabled: true, corner: 'top-left', offsetX: 16, offsetY: 16, opacity: 0.85, scale: 1 },
   keepScreenshots: true,
   autostart: false,
-  sounds: true
+  sounds: true,
+  checkForUpdates: true
 }

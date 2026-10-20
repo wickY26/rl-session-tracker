@@ -5,6 +5,8 @@ sessions grouped by mode, MMR over time, premade teams and an in-game overlay. E
 
 Spec: [SPEC.md](SPEC.md) · Intent: [docs/intent/rl-session-tracker.md](docs/intent/rl-session-tracker.md) · Plan: [tasks/plan.md](tasks/plan.md)
 
+Free and open source ([MIT](LICENSE)) · [Code signing policy](#code-signing-policy) · [Privacy](#privacy)
+
 ## Install
 
 Run `RLSessionTracker-Setup-x.y.z.exe`. The installer isn't code-signed, so Windows SmartScreen may say
@@ -71,9 +73,13 @@ Installed apps check [the GitHub releases](https://github.com/wickY26/rl-session
 public for that.
 
 1. Bump `version` in `package.json` (e.g. `0.1.0` → `0.2.0`).
-2. Commit and push.
-3. `npm run release` — builds the installer and publishes `v<version>` (installer, blockmap, `latest.yml`) with the
-   GitHub CLI (`gh auth login` once). It refuses a version that is already released.
+2. Commit and push to `main`.
+3. `npm run release` — tags the commit `v<version>` and pushes the tag. GitHub Actions
+   ([release.yml](.github/workflows/release.yml)) then type-checks, tests, builds the installer, has it signed by
+   SignPath (approve the request in SignPath when it appears) and publishes it with `latest.yml`.
+
+Releases are built on GitHub Actions, never on a developer PC: SignPath only signs verifiable CI builds of this
+repository. `npm run release:local` (build and publish from this PC, never signed) is an emergency fallback only.
 
 ### Adding a screenshot the reader gets wrong
 
@@ -91,3 +97,43 @@ RLST_SELFTEST=<img1,img2> RLST_SELFTEST_OUT=<dir> RLST_SELFTEST_ACCOUNT=<name> "
 Optional: `RLST_SELFTEST_DATA=<tracker.json>` to start from existing data, `RLST_SELFTEST_TABS=Session,Dashboard,…`
 to capture tabs. Runs in its own data folder, reads the images through the real card and save path, writes window
 screenshots plus `tracker.json` to the output folder, then exits.
+
+## Code signing policy
+
+Windows installers are signed with a certificate from the SignPath Foundation:
+**Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by
+[SignPath Foundation](https://signpath.org).**
+
+- Every signed release is built by [GitHub Actions](.github/workflows/release.yml) from this repository's source;
+  nothing built on a personal machine is signed.
+- Every signing request is approved manually by an approver.
+
+Team roles:
+
+| Role | Members |
+|---|---|
+| Committers and reviewers | [wickY26](https://github.com/wickY26) |
+| Approvers | [wickY26](https://github.com/wickY26) |
+
+All team members use multi-factor authentication for GitHub and SignPath.
+
+## Privacy
+
+This program will not transfer any information to other networked systems unless specifically requested by the
+user or the person installing or operating it — with one exception, which can be turned off:
+
+- **Update check:** at start-up and every 6 hours the app asks GitHub
+  ([releases of this repository](https://github.com/wickY26/rl-session-tracker/releases)) whether a newer version
+  exists. The request contains no personal data; as with any web request GitHub sees your IP address
+  ([GitHub privacy statement](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement)).
+  Turn it off in **Settings → App → Check for updates automatically**. Updates are only downloaded and installed
+  when you click to do so. The installer shows this notice before installing.
+
+Everything the app records — matches, sessions and scoreboard screenshots — stays on your PC
+(`%APPDATA%l-session-tracker\data\`). Screenshots are read locally (offline OCR); nothing is uploaded.
+
+## License
+
+[MIT](LICENSE) © 2026 wickY26. Third-party components keep their own licenses: Electron (MIT, Chromium licenses are
+shipped with the app), tesseract.js and its English language data (Apache-2.0), jimp (MIT), electron-updater (MIT).
+Rocket League is a trademark of Psyonix; this project is not affiliated with or endorsed by Psyonix or Epic Games.

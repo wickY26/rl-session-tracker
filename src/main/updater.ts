@@ -15,7 +15,9 @@ export class Updater {
   constructor(
     private readonly onChange: () => void,
     /** Called right before quitting to install, so the window's hide-to-tray handler lets go. */
-    private readonly beforeInstall: () => void
+    private readonly beforeInstall: () => void,
+    /** Whether automatic checks are on (Settings); "Check for updates" always works. */
+    private readonly autoCheck: () => boolean
   ) {}
 
   state(): UpdateState {
@@ -44,8 +46,10 @@ export class Updater {
     })
     autoUpdater.on('update-downloaded', (info) => this.set({ status: 'ready', version: info.version }))
     autoUpdater.on('error', (err) => this.set({ status: 'error', message: err.message }))
-    void this.check()
-    setInterval(() => void this.check(), CHECK_EVERY_MS)
+    if (this.autoCheck()) void this.check()
+    setInterval(() => {
+      if (this.autoCheck()) void this.check()
+    }, CHECK_EVERY_MS)
   }
 
   async check(): Promise<void> {

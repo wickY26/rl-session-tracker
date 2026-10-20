@@ -1,0 +1,94 @@
+# Builds, tests and publishes a release when a version tag (v1.2.3) is pushed — `npm run release` does that.
+# Releases are built here, not on a developer PC: SignPath only signs verifiable CI builds of this repo.
+#
+# Signing turns on once these repository settings exist (Settings → Secrets and variables → Actions):
+#   secret   SIGNPATH_API_TOKEN
+#   variable SIGNPATH_ORGANIZATION_ID, SIGNPATH_PROJECT_SLUG, SIGNPATH_SIGNING_POLICY_SLUG,
+#            SIGNPATH_ARTIFACT_CONFIGURATION_SLUG
+# Without them the installer is published unsigned. Every signing request waits for manual approval in SignPath.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    env:
+      SIGN: ${{ vars.SIGNPATH_ORGANIZATION_ID != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Tag must match package.json version
+        shell: bash
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package.json version $version"
+            exit 1
+          fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - run: npm run typecheck
+      - run: npm test
+
+      - name: Build installer
+        run: |
+          npm run build
+          npx electron-builder --win --publish never
+
+      - name: Upload installer for signing
+        id: unsigned
+        if: env.SIGN == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-unsigned
+          path: release/RLSessionTracker-Setup-${{ env.VERSION }}.exe
+          if-no-files-found: error
+
+      - name: Sign with SignPath (waits for approval)
+        if: env.SIGN == 'true'
+        uses: signpath/github-action-submit-signing-request@v2
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG }}
+          artifact-configuration-slug: ${{ vars.SIGNPATH_ARTIFACT_CONFIGURATION_SLUG }}
+          github-artifact-id: ${{ steps.unsigned.outputs.artifact-id }}
+          wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: 3600
+          output-artifact-directory: signed
+
+      # Signing changes the installer's bytes: the blockmap and latest.yml electron-builder made for the
+      # unsigned file would make installed apps reject the update, so they are rebuilt for the signed one.
+      - name: Use the signed installer
+        if: env.SIGN == 'true'
+        shell: bash
+        run: |
+          cp "signed/RLSessionTracker-Setup-$VERSION.exe" "release/RLSessionTracker-Setup-$VERSION.exe"
+          npx tsx scripts/update-metadata.mts "release/RLSessionTracker-Setup-$VERSION.exe" "$VERSION"
+
+      - name: Publish GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          notes="RL Session Tracker $VERSION"
+          if [ "$SIGN" != "true" ]; then notes="$notes (unsigned build)"; fi
+          gh release create "$GITHUB_REF_NAME" \
+            "release/RLSessionTracker-Setup-$VERSION.exe" \
+            "release/RLSessionTracker-Setup-$VERSION.exe.blockmap" \
+            release/latest.yml \
+            --title "$GITHUB_REF_NAME" --notes "$notes" --generate-notes

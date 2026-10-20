@@ -1,51 +1,23 @@
 /**
- * Builds the installer and publishes it as GitHub release v<package.json version> on
- * wickY26/rl-session-tracker, together with latest.yml so installed apps see the update.
+ * Starts a release: tags the current commit v<package.json version> and pushes the tag. GitHub Actions
+ * (.github/workflows/release.yml) then builds, tests, signs (SignPath, once set up) and publishes it.
  *   npm run release
- * Needs the GitHub CLI signed in (`gh auth login`, or GH_TOKEN set). Commit and push first:
- * the release tag is created on the remote main branch.
- *
- * The upload is done by `gh release create` in one call: electron-builder's own publishing
- * creates the release from parallel uploads and fails with "Published releases must have a valid tag".
+ * Bump "version" in package.json, commit and push first.
  */
-import { execFileSync, spawnSync } from 'node:child_process'
-import { existsSync, readFileSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 
-const REPO = 'wickY26/rl-session-tracker'
 const { version } = JSON.parse(readFileSync('package.json', 'utf8')) as { version: string }
 const tag = `v${version}`
+const git = (...args: string[]) => execFileSync('git', args, { encoding: 'utf8' }).trim()
 
-/** `gh` on PATH, or the installer's default location (PATH may predate the install). */
-function gh(): string {
-  for (const candidate of ['gh', 'C:\\Program Files\\GitHub CLI\\gh.exe']) {
-    try {
-      execFileSync(candidate, ['--version'], { stdio: 'ignore' })
-      return candidate
-    } catch {
-      // try the next one
-    }
-  }
-  throw new Error('GitHub CLI not found: install it and run `gh auth login`.')
-}
+if (git('status', '--porcelain')) throw new Error('Uncommitted changes — commit them first: the release is built from the pushed commit.')
+if (git('rev-parse', '--abbrev-ref', 'HEAD') !== 'main') throw new Error('Release from the main branch.')
+git('fetch', 'origin', 'main', '--tags')
+if (git('rev-parse', 'HEAD') !== git('rev-parse', 'origin/main')) throw new Error('main is not pushed (or is behind origin) — push first.')
+if (git('ls-remote', '--tags', 'origin', tag)) throw new Error(`${tag} already exists — bump "version" in package.json first.`)
 
-const run = (cmd: string, args: string[], shell = false) => {
-  const res = spawnSync(cmd, args, { stdio: 'inherit', shell })
-  if (res.error) throw res.error
-  if (res.status !== 0) process.exit(res.status ?? 1)
-}
-
-const ghBin = gh()
-const exists = spawnSync(ghBin, ['release', 'view', tag, '-R', REPO], { stdio: 'ignore' }).status === 0
-if (exists) throw new Error(`${tag} is already released — bump "version" in package.json first.`)
-
-console.log(`Building ${tag}…`)
-// npm is a .cmd on Windows, which Node only starts through a shell
-run('npm', ['run', 'dist'], true)
-
-const files = [`release/RLSessionTracker-Setup-${version}.exe`, `release/RLSessionTracker-Setup-${version}.exe.blockmap`, 'release/latest.yml']
-for (const f of files) if (!existsSync(f)) throw new Error(`missing build output: ${f}`)
-if (!readFileSync('release/latest.yml', 'utf8').includes(`version: ${version}`)) throw new Error('release/latest.yml is not for this version')
-
-console.log(`Publishing ${tag}…`)
-run(ghBin, ['release', 'create', tag, ...files, '-R', REPO, '--target', 'main', '--title', tag, '--notes', `RL Session Tracker ${version}`])
-console.log(`Published ${tag}: https://github.com/${REPO}/releases/tag/${tag}`)
+git('tag', '-a', tag, '-m', `RL Session Tracker ${version}`)
+git('push', 'origin', tag)
+console.log(`Pushed ${tag}. Build and publish: https://github.com/wickY26/rl-session-tracker/actions`)
+console.log('If signing is set up, approve the signing request in SignPath when it appears.')

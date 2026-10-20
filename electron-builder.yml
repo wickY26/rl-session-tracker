@@ -22,6 +22,8 @@ nsis:
   allowToChangeInstallationDirectory: true
   perMachine: false
   createDesktopShortcut: true
+  # Shown as the first installer page: privacy note (update check) and the MIT license
+  license: resources/installer-notice.txt
 # Releases (installer + latest.yml) live on GitHub; installed apps check them for updates.
 # The repo must stay public: update checks don't sign in.
 publish:

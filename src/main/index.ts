@@ -510,12 +510,14 @@ function registerIpc(): void {
   ipcMain.handle('settings:update', (_e, next: Settings) => {
     setCancelHotkey(false)
     const accountChanged = next.accountName !== settings.accountName
+    const updatesTurnedOn = next.checkForUpdates && !settings.checkForUpdates
     settings = next
     storage.saveSettings(settings)
     if (accountChanged) reader.setAccountName(settings.accountName)
     registerHotkeys()
     applyAutoStart()
     refreshOverlay()
+    if (updatesTurnedOn) void updater.check()
     broadcastState()
   })
   ipcMain.handle('update:check', () => updater.check())
@@ -592,9 +594,13 @@ void app.whenReady().then(() => {
     app.exit(1)
     return
   }
-  updater = new Updater(broadcastState, () => {
-    quitting = true
-  })
+  updater = new Updater(
+    broadcastState,
+    () => {
+      quitting = true
+    },
+    () => settings.checkForUpdates
+  )
   reader = new ScoreboardReader({ langPath: langPath(), accountName: settings.accountName, templates })
   void reader.warmUp()
   registerIpc()

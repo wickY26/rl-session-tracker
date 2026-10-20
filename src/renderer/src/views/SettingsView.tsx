@@ -229,6 +229,11 @@ export function SettingsView(props: {
             <input type="checkbox" checked={draft.autostart} onChange={(e) => set('autostart', e.target.checked)} /> Start hidden in the tray (installed app
             only)
           </label>
+          <span>Updates</span>
+          <label className="check">
+            <input type="checkbox" checked={draft.checkForUpdates} onChange={(e) => set('checkForUpdates', e.target.checked)} /> Check for
+            updates automatically — asks GitHub for a newer release at start-up and every 6 hours; this is the app's only network access
+          </label>
           <span>Version</span>
           <div className="inline-fields">
             <span>{appVersion}</span>
